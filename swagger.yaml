@@ -1,5 +1,68 @@
 openapi: 3.0.2
 info:
-  title: ITA21
+  title: To-do-list
   version: 1.0.0
-  description: Demonstration API
+paths:
+  /users:
+    summary: Path used to manage the list of users.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `User` entities.  This path contains a
+      `GET` and `POST` operation to perform the list and create tasks, respectively.
+    post:
+      requestBody:
+        description: A new `User` to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples:
+              User:
+                value:
+                  email: user@gmail.com
+                  password: user
+        required: true
+      tags:
+        - /users
+      responses:
+        '201':
+          description: Successful response.
+        '400':
+          content:
+            text/html:
+              examples:
+                Email and password are required:
+                  value: Email and password are required
+                'Unexpected token } in JSON at position 32':
+                  value: 'Unexpected token } in JSON at position 32'
+          description: Bad Request
+        '409':
+          content:
+            text/html:
+              examples:
+                Email already exists:
+                  value: Email already exists
+          description: Email already exists
+      operationId: createUser
+      summary: Create a User
+      description: Creates a new instance of a `User`.
+components:
+  schemas:
+    User:
+      title: Root Type for User
+      description: ''
+      type: object
+      properties:
+        id:
+          format: int32
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        id: 1
+        email: tauri.saar123@gmail.com
+        password: suema
+tags:
+  - name: /users
+    description: ''
