@@ -4,6 +4,7 @@ const app = express();
 const swaggerUi = require('swagger-ui-express');
 const yamlJs = require('yamljs');
 const swaggerDocument = yamlJs.load('./swagger.yaml');
+const {v4: uuidv4} = require('uuid');
 
 // Import bcrypt for password encryption
 const bcrypt = require('bcrypt');
@@ -12,6 +13,8 @@ const saltRounds = 10; // Number of salt rounds to use for encryption
 require('dotenv').config();
 
 const port = process.env.PORT || 3000;
+
+let sessions = [];
 
 // Serve static files
 app.use(express.static('public'));
@@ -56,6 +59,87 @@ app.post('/users', (req, res) => {
             return res.status(201).send('User created');
         }
     });
+});
+
+// Endpoint to log in a user
+app.post('/sessions', (req, res) => {
+    const {email, password} = req.body;
+
+    // Validate the email and password
+    if (!email || !password) {
+        return res.status(400).send('Email and password are required');
+    }
+
+    // Find the user in the database
+    const user = users.find(u => u.email === email);
+
+    // If the user is not found, return an error
+    if (!user) {
+        return res.status(401).send('Invalid email or password');
+    }
+
+    // Compare the password with the hash in the database
+    bcrypt.compare(password, user.password, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error signing in');
+        } else if (result) {
+            // Create a session for the user
+            const session = {id: uuidv4(), userId: user.id};
+
+            // Store the session in the database
+            sessions.push(session);
+
+            // Send the session id back to the client
+            return res.status(201).send({sessionId: session.id});
+        } else {
+            return res.status(401).send('Invalid email or password');
+        }
+    });
+});
+
+function authenticateRequest(req, res, next) {
+    // Validate the authorization header is present
+    if (!req.headers.authorization) {
+        return res.status(401).send('Authorization header is required');
+    }
+
+    // Validate the authorization header is in the correct format
+    const authHeader = req.headers.authorization.split(' ');
+    if (authHeader.length !== 2 || authHeader[0] !== 'Bearer') {
+        return res.status(401).send('Authorization header is invalid');
+    }
+
+    // Validate the session id is valid
+    const sessionId = authHeader[1];
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) {
+        return res.status(401).send('Session not found');
+    }
+
+    // Validate the user id is valid
+    const user = users.find(u => u.id === session.userId);
+    if (!user) {
+        return res.status(404).send('User not found');
+    }
+
+    // Attach the user to the request object
+    req.user = user;
+
+    // Attach the session to the request object
+    req.session = session;
+
+    // Call the next middleware
+    next();
+}
+
+// Endpoint to log out a user
+app.delete('/sessions', authenticateRequest, (req, res) => {
+    // Remove the session from the database
+    sessions = sessions.filter(s => s.id !== req.session.id);
+
+    // Return a success message
+    res.status(204).end();
 });
 
 // Start the server and connect to the database

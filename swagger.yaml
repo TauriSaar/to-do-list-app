@@ -45,6 +45,63 @@ paths:
       operationId: createUser
       summary: Create a User
       description: Creates a new instance of a `User`.
+  /sessions:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples:
+              Credentials:
+                value:
+                  email: user@gmail.com
+                  password: user
+        required: true
+      tags:
+        - /sessions
+      responses:
+        '201':
+          content:
+            application/json:
+              examples:
+                sessionId:
+                  value:
+                    sessionId: 8b359153-c7e4-4038-bbee-77638e9ee308
+          description: 'Successful sign in '
+        '400':
+          content:
+            text/html:
+              examples:
+                Email and password are required:
+                  value: Email and password are required
+          description: Bad Request
+        '401':
+          content:
+            text/html:
+              examples:
+                Invalid email or password:
+                  value: Invalid email or password
+          description: Unauthorized
+      summary: Sign in
+    delete:
+      tags:
+        - /sessions
+      responses:
+        '204':
+          description: Successful sign out
+        '401':
+          content:
+            text/html:
+              examples:
+                Authorization header is required:
+                  value: Authorization header is required
+                Authorization header is invalid:
+                  value: Authorization header is invalid
+          description: Unauthorized
+      security:
+        - Bearer: [ ]
+      summary: Sign out
 components:
   schemas:
     User:
@@ -59,10 +116,12 @@ components:
           type: string
         password:
           type: string
-      example:
-        id: 1
-        email: tauri.saar123@gmail.com
-        password: suema
+  securitySchemes:
+    Bearer:
+      scheme: bearer
+      type: http
 tags:
   - name: /users
+    description: ''
+  - name: /sessions
     description: ''
