@@ -14,7 +14,8 @@ require('dotenv').config();
 
 const port = process.env.PORT || 3000;
 
-let sessions = [];
+let sessions = [{id: '1234', userId: '1234'}];
+let items = [{id: '1234', userId: '1234', text: 'lorem ipsum'}];
 
 // Serve static files
 app.use(express.static('public'));
@@ -27,7 +28,7 @@ app.use(express.json());
 
 
 // Create a user array to store users
-const users = [];
+const users = [{id: '1234', email: '1234'}];
 
 // General error handler middleware
 app.use((err, req, res, next) => {
@@ -140,6 +141,11 @@ app.delete('/sessions', authenticateRequest, (req, res) => {
 
     // Return a success message
     res.status(204).end();
+});
+
+// Endpoint to get the current users items
+app.get('/items', authenticateRequest, (req, res) => {
+    res.status(200).send(items.filter(i => i.userId === req.user.id));
 });
 
 // Start the server and connect to the database

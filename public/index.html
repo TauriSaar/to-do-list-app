@@ -31,17 +31,26 @@
         <a href="#" v-if="!sessionId" @click="showSignInModal">Sign In</a>
         <a href="#" v-if="sessionId" @click="signOut">Sign Out</a>
     </div>
-
-    <div class="modal" id="sign-up-modal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Sign Up</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="form-group">
+    <div class="row">
+        <div class="col-12">
+            <h1>Todo App</h1>
+            <!-- Items -->
+            <ul>
+                <li v-for="item in items" :key="item.id">
+                    <span>{{ item.text }}</span>
+                </li>
+            </ul>
+        </div>
+        <div class="modal" id="sign-up-modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sign Up</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
                             <label for="email"><i class="fas fa-user"></i> Email:</label>
                             <input type="text" id="signUpEmail" v-model="signUpEmail" required>
                         </div>
